@@ -97,8 +97,8 @@ class Tag(object):
                 name=self.name,
                 attrs=self._attrs)
 
-    def add(self, c):
-        indent = INDENT * (self._top_indent + 1)
+    def add(self, c, offset=0):
+        indent = INDENT * (self._top_indent + 1 + offset)
         State.gstate.append(indent + c)
 
     def _html_block_start(self):
@@ -116,10 +116,10 @@ class Tag(object):
         return '</%s>' % self.name
 
     def _jinja_block_start(self):
-        return '{%' + self.name + '%}'
+        return '{% ' + self.name + ' %}'
 
     def _jinja_block_end(self):
-        return '{%' + 'end%s' % self.name.split()[0] + '%}'
+        return '{% ' + 'end%s' % self.name.split()[0] + ' %}'
 
     @property
     def _attrs(self):
