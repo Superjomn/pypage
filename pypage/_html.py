@@ -1,5 +1,3 @@
-__all__ = ('State', 'Page', 'Tag')
-
 import sys
 import os
 from flask import Flask, send_from_directory, render_template
@@ -53,8 +51,8 @@ class State(object):
 
 
 class Tag(object):
-    def __init__(self, name, c=None, html=True, single=False, **kwargs):
-        self.name = name
+    def __init__(self, name_, c=None, html=True, single=False, **kwargs):
+        self.name = name_
         self.kwargs = kwargs
         self.html = html
         self.content = []
@@ -70,6 +68,30 @@ class Tag(object):
         if c is not None:
             self.add(c)
         self.__exit__(None, None, None)
+
+    def as_row(self):
+        self.kwargs.setdefault('class', '')
+        self.kwargs['class'] += ' row'
+        return self
+
+    def as_col(self, size=None):
+        self.kwargs.setdefault('class', '')
+        if size is not None:
+            assert isinstance(size, int)
+            self.kwargs['class'] += ' col-%d' % size
+        else:
+            self.kwargs['class'] += ' col'
+        return self
+
+    def as_container(self):
+        self.kwargs.setdefault('class', '')
+        self.kwargs['class'] += ' container'
+        return self
+
+    def as_container_fluid(self):
+        self.kwargs.setdefault('class', '')
+        self.kwargs['class'] += ' container-fluid'
+        return self
 
     def __enter__(self):
         if self not in State.gstate.instances:
@@ -130,6 +152,11 @@ class Tag(object):
         return self.__str__()
 
 
+class RawHtml(object):
+    def __init__(self, txt):
+        State.gstate.append(txt)
+
+
 class Style(Tag):
     def __init__(self, **kwargs):
         super().__init__('style')
@@ -157,14 +184,15 @@ class Page(Tag):
     include a <html>
     '''
 
-    def __init__(self, title=""):
+    def __init__(self, title="", filename="tmp.html"):
         self.state = State()
+        self.filename = filename
         State.switch_gstate(self.state)
         super().__init__('html')
         self._title = title
         with self:
             self._style = Style()
-            self._body = Tag('body')
+            self._body = Tag('body', style='margin:0px;padding:0px;')
 
     @page_switch_gstate
     def set_title(self, title):
@@ -172,21 +200,27 @@ class Page(Tag):
 
     @property
     def body(self):
+        State.switch_gstate(self.state)
         return self._body
 
     @property
     def style(self):
+        State.switch_gstate(self.state)
         return self._style
 
+    def compile(self, tpl_dir='template'):
+        path = os.path.join(tpl_dir, self.filename)
+        with open(path, 'w') as f:
+            f.write(self.state.compile())
+
     @page_switch_gstate
-    def display(self):
+    def display(self, host='0.0.0.0', port=8081, tpl_dir='template'):
         ''' start a flask service and display this page. '''
         SERVER_PATH = os.path.abspath(os.path.dirname(sys.argv[0]))
-        dir = '_tmp'
-        STATIC_DIR = os.path.join(SERVER_PATH, dir)
-        if not os.path.isdir(dir):
-            os.mkdir(dir)
-        with open(os.path.join(dir, '1.html'), 'w') as f:
+        STATIC_DIR = os.path.join(SERVER_PATH, tpl_dir)
+        if not os.path.isdir(tpl_dir):
+            os.mkdir(tpl_dir)
+        with open(os.path.join(tpl_dir, self.filename), 'w') as f:
             f.write(State.gstate.compile())
         print('server root', SERVER_PATH)
         print('static dir', STATIC_DIR)
@@ -197,10 +231,8 @@ class Page(Tag):
 
         @app.route('/')
         def display():
-            return render_template('1.html')
+            return render_template(self.filename)
 
-        host = '127.0.0.1'
-        port = 8081
         app.run(debug=True, host=host, port=port)
 
     @page_switch_gstate
@@ -214,7 +246,7 @@ class Page(Tag):
                 '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>')
             State.gstate.append(
                 '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>')
-
+        return self
 
 def compile(li):
     '''

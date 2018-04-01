@@ -60,5 +60,5 @@ class image(Tag):
 
 
 class code(Tag):
-    def __init__(self, **kwargs):
-        super().__init__(name=['pre', 'code'])
+    def __init__(self, c=None, **kwargs):
+        super().__init__(name_=['pre', 'code'], c=c)

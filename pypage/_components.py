@@ -2,10 +2,11 @@ from pypage._html import *
 from pypage.utils import wrap_methods
 
 
-def navbar(logotxt, links, active=None, theme='light', color='light'):
+def navbar(logotxt, links, link_txts, active=None, theme='light', color='light'):
     '''
     logotxt: a setence as logo.
     links: list of string.
+    link_txts: list of string.
     active: the active link's setence.
     '''
     navbar_class = "navbar-%s" % theme
@@ -22,13 +23,13 @@ def navbar(logotxt, links, active=None, theme='light', color='light'):
             style="background-color:%s" % color)
 
     with tag:
-        Tag('a', 'Navbar', class_='navbar-brand', href='/')
+        Tag('a', logotxt, class_='navbar-brand', href='/')
 
         with Tag('div', class_='collapse navbar-collapse', id='navbarNav'):
             with Tag('ul', class_='navbar-nav'):
-                for link in links:
+                for idx,link in enumerate(links):
                     with Tag('li', class_='nav-item'):
-                        Tag('a', link, class_='nav-link', href='/%s' % link)
+                        Tag('a', link_txts[idx], class_='nav-link', href='%s' % link)
 
 
 @wrap_methods
@@ -37,8 +38,8 @@ class alert(Tag):
                    'info', 'light', 'dark')
     METHOD_NAMER = lambda style: 'set_' + style
 
-    def __init__(self, **kwargs):
-        super().__init__('div', class_='alert', role='alert', **kwargs)
+    def __init__(self, c=None, **kwargs):
+        super().__init__('div', c=c, class_='alert', role='alert', **kwargs)
 
     def _in(self, method, style, *args, **kwargs):
         self.kwargs['class'] += ' alert-%s' % style
@@ -51,8 +52,8 @@ class badge(Tag):
                    'info', 'light', 'dark')
     METHOD_NAMER = lambda style: 'set_' + style
 
-    def __init__(self, **kwargs):
-        super().__init__('span', class_='badge', role='alert', **kwargs)
+    def __init__(self, c=None, **kwargs):
+        super().__init__('span', c=c, class_='badge', role='alert', **kwargs)
 
     def _in(self, method, style, *args, **kwargs):
         self.kwargs['class'] += ' badge-%s' % style

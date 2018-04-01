@@ -23,6 +23,11 @@ class _for_(pystmt):
     def __init__(self, cond):
         super().__init__('for ' + cond)
 
+FOR = _for_
+IF = _if_
+VAL = _val_
+STMT = _stmt_
+
 
 if __name__ == '__main__':
     State.switch_gstate(State())
