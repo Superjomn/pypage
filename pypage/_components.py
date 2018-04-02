@@ -1,12 +1,40 @@
-from _html import *
-from utils import wrap_methods
+from pypage._html import *
+from pypage.utils import wrap_methods
+
+
+def navbar(logotxt, links, active=None, theme='light', color='light'):
+    '''
+    logotxt: a setence as logo.
+    links: list of string.
+    active: the active link's setence.
+    '''
+    navbar_class = "navbar-%s" % theme
+    navbar_color = None
+    style = None
+    if color in ('primary', 'dark'):
+        tag = Tag(
+            'nav',
+            class_='navbar navbar-expand-lg %s bg-%s' % (navbar_class, color))
+    else:
+        tag = Tag(
+            'nav',
+            class_='navbar navbar-expand-lg %s' % navbar_class,
+            style="background-color:%s" % color)
+
+    with tag:
+        Tag('a', 'Navbar', class_='navbar-brand', href='/')
+
+        with Tag('div', class_='collapse navbar-collapse', id='navbarNav'):
+            with Tag('ul', class_='navbar-nav'):
+                for link in links:
+                    with Tag('li', class_='nav-item'):
+                        Tag('a', link, class_='nav-link', href='/%s' % link)
+
 
 @wrap_methods
 class alert(Tag):
-    WRAP_STYLES = (
-        'primary', 'secondary', 'success', 'danger', 'warning', 'info',
-        'light', 'dark'
-    )
+    WRAP_STYLES = ('primary', 'secondary', 'success', 'danger', 'warning',
+                   'info', 'light', 'dark')
     METHOD_NAMER = lambda style: 'set_' + style
 
     def __init__(self, **kwargs):
@@ -16,12 +44,11 @@ class alert(Tag):
         self.kwargs['class'] += ' alert-%s' % style
         return self
 
+
 @wrap_methods
 class badge(Tag):
-    WRAP_STYLES = (
-        'primary', 'secondary', 'success', 'danger', 'warning', 'info',
-        'light', 'dark'
-    )
+    WRAP_STYLES = ('primary', 'secondary', 'success', 'danger', 'warning',
+                   'info', 'light', 'dark')
     METHOD_NAMER = lambda style: 'set_' + style
 
     def __init__(self, **kwargs):
@@ -30,6 +57,7 @@ class badge(Tag):
     def _in(self, method, style, *args, **kwargs):
         self.kwargs['class'] += ' badge-%s' % style
         return self
+
 
 class list_group(Tag):
     def __init__(self, **kwargs):
@@ -42,6 +70,7 @@ class list_group(Tag):
         State.gstate.switch()
         return t
 
+
 class card(Tag):
     def __init__(self, **kwargs):
         super().__init__('div', class_='card')
@@ -51,7 +80,8 @@ class card(Tag):
     def image(self, src, **kwargs):
         if not self._image:
             State.gstate.switch(self)
-            self._image = Tag('img', single=True, class_='card-img-top', src=src, **kwargs)
+            self._image = Tag(
+                'img', single=True, class_='card-img-top', src=src, **kwargs)
             State.gstate.switch()
         else:
             self._image.kwargs['src'] = src

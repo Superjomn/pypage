@@ -1,4 +1,4 @@
-from _html import Tag, State
+from pypage._html import Tag, State
 
 
 def _val_(name):

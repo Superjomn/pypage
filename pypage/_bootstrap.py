@@ -1,9 +1,7 @@
-__all__ = ('content', 'code', 'layout', 'components')
+from __future__ import absolute_import
+__all__ = ('layout', )
 
-
-from _html import *
-import _content as content
-import _components as components
+from pypage._html import Tag
 
 
 class layout(object):
@@ -12,8 +10,18 @@ class layout(object):
         return Tag('div', class_='container', **kwargs)
 
     @staticmethod
+    def fluid_container(**kwargs):
+        return Tag('div', class_='container-fluid', **kwargs)
+
+    @staticmethod
     def row(**kwargs):
         return Tag('div', class_='row', **kwargs)
+
+    @staticmethod
+    def col(size=None, **kwargs):
+        if size is None:
+            return Tag('div', class_='col', **kwargs)
+        return Tag('div', class_='col-%d' % size)
 
     @staticmethod
     def sm_col(**kwargs):

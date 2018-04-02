@@ -1,13 +1,19 @@
-import functools
-from _html import Tag
-from utils import wrap_methods
+from __future__ import absolute_import
+from pypage._html import Tag
+from pypage.utils import wrap_methods
+
+
+class div(Tag):
+    def __init__(self, name, c=None, html=True, single=False, **kwargs):
+        super().__init__(name, c=c, html=html, single=single, **kwargs)
 
 
 @wrap_methods
 class table(Tag):
     WRAP_STYLES = ('table-dark', 'table-striped', 'table-sm', 'table-hover')
 
-    def METHOD_NAMER(style): return 'set_' + '_'.join(style.split('-')[1:])
+    def METHOD_NAMER(style):
+        return 'set_' + '_'.join(style.split('-')[1:])
 
     class row(Tag):
         def __init__(self, c=None, **kwargs):
@@ -32,14 +38,11 @@ class table(Tag):
 
 @wrap_methods
 class image(Tag):
-    WRAP_STYLES = (
-        'img-fluid',
-        'img-thumbnail',
-        'float-left',
-        'float-right',
-        'rounded')
+    WRAP_STYLES = ('img-fluid', 'img-thumbnail', 'float-left', 'float-right',
+                   'rounded')
 
-    def METHOD_NAMER(style): return 'set_' + '_'.join(style.split('-')[1:])
+    def METHOD_NAMER(style):
+        return 'set_' + '_'.join(style.split('-')[1:])
 
     def __init__(self, src, **kwargs):
         super().__init__('img', single=True, src=src, class_='img-fluid')
