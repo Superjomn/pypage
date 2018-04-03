@@ -32,6 +32,30 @@ def navbar(logotxt, links, link_txts, active=None, theme='light', color='light')
                         Tag('a', link_txts[idx], class_='nav-link', href='%s' % link)
 
 
+class collapse:
+    count = 0
+    def __init__(self):
+        self._btn = None
+        self._trg = None
+        self._trg_id = "collapse-%d" % collapse.count
+        collapse.count += 1
+
+    @property
+    def btn(self):
+        if self._btn is None:
+            self._btn = Tag('a', class_='btn btn-primary' data-toggle='collapse' href='#%s'%self._trg_id, role='button', 
+                            aria-expanded='false', aria-controls=self._trg_id)
+        return self._btn
+
+    @property
+    def trg(self):
+        if self._trg is None:
+            with Tag('div', class_='collapse', id=self._trg_id):
+                with Tag('div', class_='card card-body') as _:
+                    self._trg = _
+        return self._trg
+
+
 @wrap_methods
 class alert(Tag):
     WRAP_STYLES = ('primary', 'secondary', 'success', 'danger', 'warning',
