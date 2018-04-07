@@ -29,6 +29,64 @@ VAL = _val_
 STMT = _stmt_
 
 
+class Snippet(object):
+    '''
+    A reusable html snippet associated with python logic. This can make the pair of frontend and backend more modular.
+    One can use it like
+
+    class NameSnippet(Snippet):
+        def __init__(self, name):
+            self.name = name
+            super().__init__()
+
+        @property
+        def view(self):
+            Tag('h1', "my name is %s" % VAL(self.wrap_key('name))
+
+        @property
+        def logic(self):
+            return {
+                self.wrap_key('name') : 'superjomn',
+            }
+
+    and reuse this snippet anywhere for any times, and finally, in a flask application, one can render a page with
+    Snippets like
+
+    @app.route('/')
+    def index():
+        return +-
+
+
+    '''
+    id_prefix = "snip"
+    counter = 0
+
+    def __init__(self, id=None):
+        self.id = id if id is not None else "%s/%d" % (Snippet.id_prefix, Snippet.counter)
+        Snippet.counter += 1
+
+    @property
+    def html(self):
+        ''' The pypage Tags.
+
+        For example:
+            Tag('b', VAL('name'))
+        '''
+        raise NotImplementedError
+
+    @property
+    def logic(self):
+        '''
+        Parameters for this Jinja2 template snippet.
+        :return: An dict for jinja2 templates.
+        '''
+        raise NotImplementedError
+
+    def wrap_key(self, name):
+        ''' Wrap a key's name to a unique id, so that the same variable name in different snippet will be unique. '''
+        return "%s/%s" % (self.id, name)
+
+
 if __name__ == '__main__':
     State.switch_gstate(State())
     with _if_('name is not None'):

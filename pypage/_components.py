@@ -43,8 +43,13 @@ class collapse:
     @property
     def btn(self):
         if self._btn is None:
-            self._btn = Tag('a', class_='btn btn-primary' data-toggle='collapse' href='#%s'%self._trg_id, role='button', 
-                            aria-expanded='false', aria-controls=self._trg_id)
+            extra = {'data-toggle': 'collapse',
+                     'aria-expanded': 'false',
+                     'aria-controls': self._trg_id}
+            self._btn = Tag('a', class_='btn btn-primary',
+                            href='#%s' % self._trg_id,
+                            role='button',
+                            **extra)
         return self._btn
 
     @property

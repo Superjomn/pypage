@@ -1,6 +1,7 @@
-import sys
 import os
-from flask import Flask, send_from_directory, render_template
+import sys
+
+from flask import Flask, render_template
 
 INDENT = '    '
 
@@ -213,15 +214,14 @@ class Page(Tag):
         with open(path, 'w') as f:
             f.write(self.state.compile())
 
-    @page_switch_gstate
-    def display(self, host='0.0.0.0', port=8081, tpl_dir='template'):
+    def display(self, host='0.0.0.0', port=8081, tpl_dir='template', args={}):
         ''' start a flask service and display this page. '''
         SERVER_PATH = os.path.abspath(os.path.dirname(sys.argv[0]))
         STATIC_DIR = os.path.join(SERVER_PATH, tpl_dir)
         if not os.path.isdir(tpl_dir):
             os.mkdir(tpl_dir)
         with open(os.path.join(tpl_dir, self.filename), 'w') as f:
-            f.write(State.gstate.compile())
+            f.write(self.state.compile())
         print('server root', SERVER_PATH)
         print('static dir', STATIC_DIR)
 
@@ -231,7 +231,7 @@ class Page(Tag):
 
         @app.route('/')
         def display():
-            return render_template(self.filename)
+            return render_template(self.filename, **args)
 
         app.run(debug=True, host=host, port=port)
 
