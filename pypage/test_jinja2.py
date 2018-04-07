@@ -21,4 +21,4 @@ if __name__ == '__main__':
     with page.body:
         snip.html
 
-    page.display(args=snip.logic)
+    page.display(args=snip.logic())

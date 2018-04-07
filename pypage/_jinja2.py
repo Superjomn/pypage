@@ -23,6 +23,7 @@ class _for_(pystmt):
     def __init__(self, cond):
         super().__init__('for ' + cond)
 
+
 FOR = _for_
 IF = _if_
 VAL = _val_
@@ -46,7 +47,7 @@ class Snippet(object):
         @property
         def logic(self):
             return {
-                self.wrap_key('name') : 'superjomn',
+                self.KEY('name') : 'superjomn',
             }
 
     and reuse this snippet anywhere for any times, and finally, in a flask application, one can render a page with
@@ -54,15 +55,14 @@ class Snippet(object):
 
     @app.route('/')
     def index():
-        return +-
-
-
+        return
     '''
     id_prefix = "snip"
     counter = 0
 
     def __init__(self, id=None):
-        self.id = id if id is not None else "%s/%d" % (Snippet.id_prefix, Snippet.counter)
+        self.id = id if id is not None else "%s__%d" % (Snippet.id_prefix,
+                                                        Snippet.counter)
         Snippet.counter += 1
 
     @property
@@ -74,7 +74,6 @@ class Snippet(object):
         '''
         raise NotImplementedError
 
-    @property
     def logic(self):
         '''
         Parameters for this Jinja2 template snippet.
@@ -82,9 +81,25 @@ class Snippet(object):
         '''
         raise NotImplementedError
 
-    def wrap_key(self, name):
+    def KEY(self, name):
         ''' Wrap a key's name to a unique id, so that the same variable name in different snippet will be unique. '''
-        return "%s/%s" % (self.id, name)
+        return "%s_%s" % (self.id, name)
+
+    def VAL(self, name):
+        return VAL(self.KEY(name))
+
+
+def merge_logics(*logics):
+    ''' merge dicts '''
+    # check no duplicate keys
+    keys = set()
+    res = dict()
+    for logic in logics:
+        for key in logic.keys():
+            assert key not in keys, "duplicate logic keys"
+            keys.add(key)
+        res.update(logic)
+    return res
 
 
 if __name__ == '__main__':

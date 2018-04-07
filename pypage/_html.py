@@ -1,5 +1,6 @@
 import os
 import sys
+import html
 
 from flask import Flask, render_template
 
@@ -45,7 +46,7 @@ class State(object):
     def compile(self):
         return compile(self.main_queue)
 
-    def clear():
+    def clear(self):
         self.main_queue.clear()
         indent = 0
         self.stack = [self.main_queue]
@@ -111,14 +112,14 @@ class Tag(object):
         if not self.single:
             self._start_tag = self._html_block_start(
             ) if self.html else self._jinja_block_start()
-            self._end_tag = self._html_block_end() if self.html else self._jinja_block_end()
+            self._end_tag = self._html_block_end(
+            ) if self.html else self._jinja_block_end()
             self.content.insert(0, indent + self._start_tag)
             self.content.append(indent + self._end_tag)
             return compile(self.content)
         else:
             return indent + '<{name} {attrs}/>'.format(
-                name=self.name,
-                attrs=self._attrs)
+                name=self.name, attrs=self._attrs)
 
     def add(self, c, offset=0):
         indent = INDENT * (self._top_indent + 1 + offset)
@@ -146,8 +147,10 @@ class Tag(object):
 
     @property
     def _attrs(self):
-        return ' '.join([" %s=%s" % (key, repr_(value))
-                         for key, value in self.kwargs.items()])
+        return ' '.join([
+            " %s=%s" % (key, repr_(value))
+            for key, value in self.kwargs.items()
+        ])
 
     def __repr__(self):
         return self.__str__()
@@ -177,6 +180,7 @@ def page_switch_gstate(f):
         self = args[0]
         State.switch_gstate(self.state)
         return f(*args, **kwargs)
+
     return handler
 
 
@@ -185,9 +189,10 @@ class Page(Tag):
     include a <html>
     '''
 
-    def __init__(self, title="", filename="tmp.html"):
+    def __init__(self, title="", filename="tmp.html", debug=False):
         self.state = State()
         self.filename = filename
+        self.debug = debug
         State.switch_gstate(self.state)
         super().__init__('html')
         self._title = title
@@ -214,6 +219,16 @@ class Page(Tag):
         with open(path, 'w') as f:
             f.write(self.state.compile())
 
+    @page_switch_gstate
+    def compile_str(self):
+        source = self.state.compile()
+        if self.debug:
+            RawHtml('<hr/>')
+            Tag('h3', 'template source code')
+            RawHtml('<pre><code>%s</code></pre>' % html.escape(source))
+
+        return source
+
     def display(self, host='0.0.0.0', port=8081, tpl_dir='template', args={}):
         ''' start a flask service and display this page. '''
         SERVER_PATH = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -225,8 +240,8 @@ class Page(Tag):
         print('server root', SERVER_PATH)
         print('static dir', STATIC_DIR)
 
-        app = Flask(__name__, static_url_path=STATIC_DIR,
-                    template_folder=STATIC_DIR)
+        app = Flask(
+            __name__, static_url_path=STATIC_DIR, template_folder=STATIC_DIR)
         #app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
         @app.route('/')
@@ -239,14 +254,19 @@ class Page(Tag):
     def enable_bootstrap(self):
         with self:
             State.gstate.append(
-                '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">')
+                '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">'
+            )
             State.gstate.append(
-                '<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>')
+                '<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>'
+            )
             State.gstate.append(
-                '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>')
+                '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>'
+            )
             State.gstate.append(
-                '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>')
+                '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>'
+            )
         return self
+
 
 def compile(li):
     '''
