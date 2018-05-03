@@ -1,5 +1,6 @@
 from pypage._html import *
 from pypage.utils import wrap_methods
+from pyecharts import Line
 
 
 def navbar(logotxt, links, link_txts, active=None, theme='light', color='light'):
@@ -123,3 +124,14 @@ class card(Tag):
             self._body = Tag('div', class_='card-body')
             State.gstate.switch()
         return self._body
+
+
+def scalar(title, x, y, mark_point=['min', 'max']):
+    '''
+    title: str
+    x: list of strs
+    y: list of number
+    '''
+    line = Line(title)
+    line.add('line', x, y, mark_point)
+    return line.render_embed()
