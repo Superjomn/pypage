@@ -134,4 +134,4 @@ def scalar(title, x, y, mark_point=['min', 'max']):
     '''
     line = Line(title)
     line.add('line', x, y, mark_point)
-    return line.render_embed()
+    return line.render_embed(), line.get_js_dependencies()
