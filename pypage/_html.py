@@ -271,12 +271,12 @@ class Page(Tag):
     def enable_echarts(self):
         ''' Add pyecharts scripts '''
         host = "https://pyecharts.github.io/assets/js"
-        with self:
-            RawHtml('''
-            {% for jsfile_name in script_list %}
-                <script src="%s/{{ jsfile_name }}.js"></script>
-            {% endfor %}
-            ''' % host)
+        with self._body:
+            RawHtml('\n'.join([
+                '{% for jsfile_name in script_list %}',
+                '<script src="%s/{{ jsfile_name }}.js"></script>' % host,
+                '{% endfor %}',
+            ]))
         return self
 
 def compile(li):
